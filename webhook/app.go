@@ -11,6 +11,7 @@ import (
 
 	"github.com/bborbe/run"
 	"github.com/golang/glog"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/seibert-media/go-kafka/consumer"
@@ -53,9 +54,13 @@ func (a *App) Run(ctx context.Context) error {
 }
 
 func (a *App) RunServer(ctx context.Context) error {
+	router := mux.NewRouter()
+	router.Path("/healthz").HandlerFunc(a.HealthCheck)
+	router.Path("/readiness").HandlerFunc(a.ReadinessCheck)
+	router.Path("/metrics").Handler(promhttp.Handler())
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", a.Port),
-		Handler: promhttp.Handler(),
+		Handler: router,
 	}
 	go func() {
 		select {
@@ -82,4 +87,14 @@ func (a *App) RunConsumer(ctx context.Context) error {
 		},
 	}
 	return consumer.Consume(ctx)
+}
+
+func (a *App) HealthCheck(resp http.ResponseWriter, req *http.Request) {
+	resp.WriteHeader(200)
+	fmt.Fprintf(resp, "ok")
+}
+
+func (a *App) ReadinessCheck(resp http.ResponseWriter, req *http.Request) {
+	resp.WriteHeader(200)
+	fmt.Fprintf(resp, "ok")
 }
