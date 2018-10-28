@@ -32,6 +32,7 @@ func main() {
 	flag.StringVar(&app.HookURL, "hook-url", "", "url send data to")
 	flag.DurationVar(&app.RetryDelay, "retry-delay", time.Second, "amount * attempt of time to wait between retry delivery")
 	flag.IntVar(&app.RetryLimit, "retry-limit", -1, "amount of retries before message is skip")
+	flag.StringVar(&app.Secret, "secret", "", "secret used to verify message")
 
 	_ = flag.Set("logtostderr", "true")
 	flag.Parse()
@@ -44,6 +45,7 @@ func main() {
 	glog.V(0).Infof("Parameter Port: %d", app.Port)
 	glog.V(0).Infof("Parameter RetryDelay: %v", app.RetryDelay)
 	glog.V(0).Infof("Parameter RetryLimit: %d", app.RetryLimit)
+	glog.V(0).Infof("Parameter Secret-Length: %d", len(app.Secret))
 
 	err := app.Validate()
 	if err != nil {

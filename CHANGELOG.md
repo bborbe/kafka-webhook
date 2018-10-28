@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.0
+
+- Add sha256 signatur of body to header.
+
 ## 2.0.0
 
 - Add retry function to prevent messages get lost

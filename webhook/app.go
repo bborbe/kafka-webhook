@@ -27,6 +27,7 @@ type App struct {
 	Port         int
 	RetryDelay   time.Duration
 	RetryLimit   int
+	Secret       string
 }
 
 func (a *App) Validate() error {
@@ -47,6 +48,9 @@ func (a *App) Validate() error {
 	}
 	if a.HookMethod == "" {
 		return errors.New("HookMethod missing")
+	}
+	if a.Secret == "" {
+		return errors.New("Secret missing")
 	}
 	return nil
 }
@@ -86,8 +90,13 @@ func (a *App) RunConsumer(ctx context.Context) error {
 			WaitBetweenRetries: a.RetryDelay,
 			MessageHandler: &PostMessageHandler{
 				Timeout: 10 * time.Second,
-				Url:     a.HookURL,
-				Method:  a.HookMethod,
+				RequestBuilder: &RequestCoding{
+					Url:    a.HookURL,
+					Method: a.HookMethod,
+					Signer: &Signer{
+						Secret: a.Secret,
+					},
+				},
 				HttpClient: &HttpClientMetrics{
 					HttpClient: http.DefaultClient,
 				},

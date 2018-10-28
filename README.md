@@ -12,6 +12,7 @@ go run main.go \
 -kafka-group=mygroup \
 -hook-url=http://localhost:1234/hook \
 -hook-method=POST \
+-secret=DontTellAnybody \
 -retry-limit=3 \
 -retry-delay=2s \
 -v=2

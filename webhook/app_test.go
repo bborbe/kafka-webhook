@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Version App", func() {
+var _ = Describe("Webhook App", func() {
 	var app *webhook.App
 	BeforeEach(func() {
 		app = &webhook.App{
@@ -22,6 +22,7 @@ var _ = Describe("Version App", func() {
 			KafkaGroup:   "my-group",
 			HookURL:      "http://www.example.com",
 			HookMethod:   http.MethodPost,
+			Secret:       "secret",
 		}
 	})
 	It("Validate without error", func() {
@@ -45,6 +46,10 @@ var _ = Describe("Version App", func() {
 	})
 	It("Validate returns error Url is empty", func() {
 		app.HookURL = ""
+		Expect(app.Validate()).To(HaveOccurred())
+	})
+	It("Validate returns error Secret is empty", func() {
+		app.Secret = ""
 		Expect(app.Validate()).To(HaveOccurred())
 	})
 })

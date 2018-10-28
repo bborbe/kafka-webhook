@@ -24,8 +24,13 @@ var _ = Describe("PostMessageHandler", func() {
 			StatusCode: 200,
 		}, nil)
 		messageHandler = &webhook.PostMessageHandler{
-			Url:        "http://www.example.com",
-			Method:     http.MethodPost,
+			RequestBuilder: &webhook.RequestCoding{
+				Url:    "http://www.example.com",
+				Method: http.MethodPost,
+				Signer: &webhook.Signer{
+					Secret: "s3cr3t",
+				},
+			},
 			HttpClient: httpClient,
 		}
 	})

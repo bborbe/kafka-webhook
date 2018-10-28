@@ -5,11 +5,8 @@
 package webhook
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -17,26 +14,23 @@ import (
 )
 
 type PostMessageHandler struct {
-	Url        string
-	Method     string
-	HttpClient HttpClient
-	Timeout    time.Duration
+	HttpClient     HttpClient
+	Timeout        time.Duration
+	RequestBuilder interface {
+		Encode(msg *sarama.ConsumerMessage) (*http.Request, error)
+	}
 }
 
-func (m *PostMessageHandler) ConsumeMessage(ctx context.Context, msg *sarama.ConsumerMessage) error {
-	req, err := http.NewRequest(m.Method, m.Url, bytes.NewBuffer(msg.Value))
+func (p *PostMessageHandler) ConsumeMessage(ctx context.Context, msg *sarama.ConsumerMessage) error {
+	req, err := p.RequestBuilder.Encode(msg)
 	if err != nil {
 		return errors.Wrap(err, "build request failed")
 	}
-	req.Header.Add("X-Message-Key", base64.StdEncoding.EncodeToString(msg.Key))
-	req.Header.Add("X-Message-Topic", msg.Topic)
-	req.Header.Add("X-Message-Offset", strconv.FormatInt(msg.Offset, 10))
-	req.Header.Add("X-Message-Partition", strconv.FormatInt(int64(msg.Partition), 10))
 
-	ctx, cancelFunc := context.WithTimeout(ctx, m.Timeout)
+	ctx, cancelFunc := context.WithTimeout(ctx, p.Timeout)
 	defer cancelFunc()
 
-	resp, err := m.HttpClient.Do(req.WithContext(ctx))
+	resp, err := p.HttpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return errors.Wrap(err, "perform request failed")
 	}
