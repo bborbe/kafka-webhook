@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.1
+
+- Fix error with failed requests
+
 ## 2.1.0
 
 - Add sha256 signatur of body to header.

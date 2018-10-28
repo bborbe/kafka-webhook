@@ -41,7 +41,11 @@ func (h *HttpClientMetrics) Do(req *http.Request) (*http.Response, error) {
 	start := time.Now()
 	resp, err := h.HttpClient.Do(req)
 	duration := time.Since(start).Seconds()
-	glog.V(3).Infof("complete %s request to %s in %d ms with status %d", req.Method, req.URL.String(), int(duration*1000), resp.StatusCode)
 	httpRequestDurationSummary.Observe(duration)
-	return resp, err
+	if err != nil {
+		glog.V(3).Infof("failed %s request to %s in %d ms: %v", req.Method, req.URL.String(), int(duration*1000), err)
+		return nil, err
+	}
+	glog.V(3).Infof("complete %s request to %s in %d ms with status %d", req.Method, req.URL.String(), int(duration*1000), resp.StatusCode)
+	return resp, nil
 }
