@@ -7,8 +7,12 @@ deps:
 	go get -u github.com/onsi/ginkgo/ginkgo
 	go get -u golang.org/x/tools/cmd/goimports
 
-precommit: format generate test check addlicense
+precommit: ensure format generate test check addlicense
 	@echo "ready to commit"
+
+ensure:
+	@go get github.com/golang/dep/cmd/dep
+	@dep ensure
 
 addlicense:
 	@go get github.com/google/addlicense
