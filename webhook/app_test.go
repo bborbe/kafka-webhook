@@ -5,6 +5,8 @@
 package webhook_test
 
 import (
+	"net/http"
+
 	"github.com/bborbe/kafka-webhook/webhook"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,7 +20,8 @@ var _ = Describe("Version App", func() {
 			KafkaBrokers: "kafka:9092",
 			KafkaTopic:   "my-topic",
 			KafkaGroup:   "my-group",
-			Url:          "http://www.example.com",
+			HookURL:      "http://www.example.com",
+			HookMethod:   http.MethodPost,
 		}
 	})
 	It("Validate without error", func() {
@@ -41,7 +44,7 @@ var _ = Describe("Version App", func() {
 		Expect(app.Validate()).To(HaveOccurred())
 	})
 	It("Validate returns error Url is empty", func() {
-		app.Url = ""
+		app.HookURL = ""
 		Expect(app.Validate()).To(HaveOccurred())
 	})
 })

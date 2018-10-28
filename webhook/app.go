@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bborbe/run"
 	"github.com/golang/glog"
@@ -18,12 +19,14 @@ import (
 )
 
 type App struct {
+	HookMethod   string
+	HookURL      string
 	KafkaBrokers string
-	Port         int
-	KafkaTopic   string
 	KafkaGroup   string
-	Url          string
-	Method       string
+	KafkaTopic   string
+	Port         int
+	RetryDelay   time.Duration
+	RetryLimit   int
 }
 
 func (a *App) Validate() error {
@@ -39,11 +42,11 @@ func (a *App) Validate() error {
 	if a.KafkaGroup == "" {
 		return errors.New("KafkaGroup missing")
 	}
-	if a.Url == "" {
+	if a.HookURL == "" {
 		return errors.New("Url missing")
 	}
-	if a.Method == "" {
-		return errors.New("Method missing")
+	if a.HookMethod == "" {
+		return errors.New("HookMethod missing")
 	}
 	return nil
 }
@@ -78,11 +81,16 @@ func (a *App) RunConsumer(ctx context.Context) error {
 		KafkaBrokers: a.KafkaBrokers,
 		KafkaTopic:   a.KafkaTopic,
 		KafkaGroup:   a.KafkaGroup,
-		MessageHandler: &MessageHandler{
-			Url:    a.Url,
-			Method: a.Method,
-			HttpClient: &HttpClientMetrics{
-				HttpClient: http.DefaultClient,
+		MessageHandler: &RetryMessageHandler{
+			MaxRetry:           a.RetryLimit,
+			WaitBetweenRetries: a.RetryDelay,
+			MessageHandler: &PostMessageHandler{
+				Timeout: 10 * time.Second,
+				Url:     a.HookURL,
+				Method:  a.HookMethod,
+				HttpClient: &HttpClientMetrics{
+					HttpClient: http.DefaultClient,
+				},
 			},
 		},
 	}

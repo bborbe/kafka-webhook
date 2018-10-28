@@ -28,6 +28,7 @@ func init() {
 	)
 }
 
+//go:generate counterfeiter -o ../mocks/http_client.go --fake-name HttpClient . HttpClient
 type HttpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }

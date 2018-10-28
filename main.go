@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	flag "github.com/bborbe/flagenv"
 	"github.com/bborbe/kafka-webhook/webhook"
@@ -25,16 +26,24 @@ func main() {
 	app := &webhook.App{}
 	flag.IntVar(&app.Port, "port", 9005, "port to listen")
 	flag.StringVar(&app.KafkaBrokers, "kafka-brokers", "", "kafka brokers")
-	flag.StringVar(&app.KafkaTopic, "kafka-topic", "", "kafka topic")
 	flag.StringVar(&app.KafkaGroup, "kafka-group", "", "kafka consumer group")
-	flag.StringVar(&app.Url, "url", "", "url send data to")
-	flag.StringVar(&app.Method, "method", http.MethodPost, "used to send data")
+	flag.StringVar(&app.KafkaTopic, "kafka-topic", "", "kafka topic")
+	flag.StringVar(&app.HookMethod, "hook-method", http.MethodPost, "used to send data")
+	flag.StringVar(&app.HookURL, "hook-url", "", "url send data to")
+	flag.DurationVar(&app.RetryDelay, "retry-delay", time.Second, "amount * attempt of time to wait between retry delivery")
+	flag.IntVar(&app.RetryLimit, "retry-limit", -1, "amount of retries before message is skip")
 
 	_ = flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	glog.V(0).Infof("Parameter Port: %d", app.Port)
+	glog.V(0).Infof("Parameter HookMethod: %s", app.HookMethod)
+	glog.V(0).Infof("Parameter HookURL: %s", app.HookURL)
 	glog.V(0).Infof("Parameter KafkaBrokers: %s", app.KafkaBrokers)
+	glog.V(0).Infof("Parameter KafkaGroup: %s", app.KafkaGroup)
+	glog.V(0).Infof("Parameter KafkaTopic: %s", app.KafkaTopic)
+	glog.V(0).Infof("Parameter Port: %d", app.Port)
+	glog.V(0).Infof("Parameter RetryDelay: %v", app.RetryDelay)
+	glog.V(0).Infof("Parameter RetryLimit: %d", app.RetryLimit)
 
 	err := app.Validate()
 	if err != nil {

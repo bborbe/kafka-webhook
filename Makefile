@@ -7,14 +7,17 @@ deps:
 	go get -u github.com/onsi/ginkgo/ginkgo
 	go get -u golang.org/x/tools/cmd/goimports
 
+precommit: format generate test check addlicense
+	@echo "ready to commit"
+
 addlicense:
-	go get github.com/google/addlicense
-	addlicense -c "Benjamin Borbe" -y 2018 -l bsd ./*.go ./webhook/*.go
+	@go get github.com/google/addlicense
+	@addlicense -c "Benjamin Borbe" -y 2018 -l bsd ./*.go ./webhook/*.go
 
 generate:
-	go get github.com/maxbrunsfeld/counterfeiter
-	rm -rf mocks
-	go generate ./...
+	@go get github.com/maxbrunsfeld/counterfeiter
+	@rm -rf mocks
+	@go generate ./...
 
 test:
 	go test -cover -race $(shell go list ./... | grep -v /vendor/)
